@@ -1,9 +1,7 @@
 #!/bin/bash
 
-# Declare an associative array to track processed sections
 declare -A processed_sections
 
-# Helper function to process a section only once
 process_section_once() {
     local section_name=$1
     local section_command=$2
@@ -14,101 +12,179 @@ process_section_once() {
     fi
 }
 
-# Process hardware information sections in order of importance
+# Define a function to prompt for the target IP
+get_target_ip() {
+    read -p "Enter the target IP address: " target_ip
+}
 
-# CPU Info
-process_section_once "CPU Info" "lscpu"
+# Section functions
+cpu_info() {
+    lscpu
+}
 
-# Memory Info
-process_section_once "Memory Info" "dmidecode -t memory"
+memory_info() {
+    sudo dmidecode -t memory
+}
 
-# Disk Info
-process_section_once "Disk Info" "lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT"
+disk_info() {
+    lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT
+}
 
-# System Uptime
-process_section_once "System Uptime" "uptime"
+system_uptime() {
+    uptime
+}
 
-# Network Interfaces
-process_section_once "Network Interfaces" "ip addr show"
+network_interfaces() {
+    ip addr show
+}
 
-# System Temperature
-process_section_once "System Temperature" "sensors"
+system_temperature() {
+    sensors
+}
 
-# Running Processes
-process_section_once "Running Processes" "ps aux"
+running_processes() {
+    ps aux
+}
 
-# Linux Kernel Version
-process_section_once "Linux Kernel Version" "uname -a"
+linux_kernel_version() {
+    uname -a
+}
 
-# System Hardware Details
-process_section_once "System Hardware Details" "lshw"
+system_hardware_details() {
+    sudo lshw
+}
 
-# Additional hardware information gathering functions
+gpu_info() {
+    lspci -vnn | grep -iE 'vga|3d'
+}
 
-# GPU Info
-process_section_once "GPU Info" "lspci -vnn | grep -iE 'vga|3d'"
+peripheral_devices_usb() {
+    lsusb
+}
 
-# Peripheral Devices
-process_section_once "Peripheral Devices" "lsusb"
-process_section_once "Peripheral Devices" "lspci -v"
+peripheral_devices_pci() {
+    lspci -v
+}
 
-# USB Devices
-process_section_once "USB Devices" "lsusb -v"
+usb_devices() {
+    lsusb -v
+}
 
-# PCI Devices
-process_section_once "PCI Devices" "lspci -vvv"
+pci_devices() {
+    lspci -vvv
+}
 
-# Mounted Filesystems
-process_section_once "Mounted Filesystems" "df -h"
+mounted_filesystems() {
+    df -h
+}
 
-# Open Ports
-process_section_once "Open Ports" "read -p 'Enter the target IP address: ' target_ip && nmap -p- --open \"$target_ip\" | grep ^[0-9] | cut -d '/' -f 1"
+open_ports() {
+    get_target_ip
+    sudo nmap -p- --open "$target_ip" | grep ^[0-9] | cut -d '/' -f 1
+}
 
-# File System Information
-process_section_once "File System Information" "df -T"
+file_system_information() {
+    df -T
+}
 
-# Network Devices
-process_section_once "Network Devices" "ifconfig -a"
-process_section_once "Network Devices" "ethtool -i eth0"  # Replace eth0 with your network interface
+network_devices() {
+    ifconfig -a
+}
 
-# DNS Configuration
-process_section_once "DNS Configuration" "cat /etc/resolv.conf"
+network_device_eth0_info() {
+    ethtool -i eth0
+}
 
-# System Services
-process_section_once "System Services" "systemctl list-units --type=service"
+dns_configuration() {
+    cat /etc/resolv.conf
+}
 
-# System Users
-process_section_once "System Users" "getent passwd"
+system_services() {
+    systemctl list-units --type=service
+}
 
-# System Groups
-process_section_once "System Groups" "getent group"
+system_users() {
+    getent passwd
+}
 
-# Installed Packages
-process_section_once "Installed Packages" "dpkg -l"
+system_groups() {
+    getent group
+}
 
-# Kernel Modules
-process_section_once "Kernel Modules" "lsmod"
+installed_packages() {
+    dpkg -l
+}
 
-# USB Controllers
-process_section_once "USB Controllers" "lsusb -t"
+kernel_modules() {
+    lsmod
+}
 
-# File Permissions
-process_section_once "File Permissions" "find / -type f -exec stat --format='%a %U %G %n' {} \\;"
+usb_controllers() {
+    lsusb -t
+}
 
-# System Environment Variables
-process_section_once "System Environment Variables" "printenv"
+file_permissions() {
+    sudo find / -type f -exec stat --format='%a %U %G %n' {} \;
+}
 
-# System Firewall Rules
-process_section_once "System Firewall Rules" "iptables -L"
+system_environment_variables() {
+    printenv
+}
 
-# System SELinux Status
-process_section_once "System SELinux Status" "sestatus"
+system_firewall_rules() {
+    sudo iptables -L
+}
 
-# System Audit Configuration
-process_section_once "System Audit Configuration" "auditctl -l"
+system_selinux_status() {
+    sestatus
+}
 
-# System Cron Jobs
-process_section_once "System Cron Jobs" "crontab -l"
+system_audit_configuration() {
+    sudo auditctl -l
+}
 
-# System Log Files
-process_section_once "System Log Files" "ls -l /var/log"
+system_cron_jobs() {
+    crontab -l
+}
+
+system_log_files() {
+    ls -l /var/log
+}
+
+# Prompt for target IP only once
+get_target_ip
+
+# Run sections
+process_section_once "CPU Info" "cpu_info"
+process_section_once "Memory Info" "memory_info"
+process_section_once "Disk Info" "disk_info"
+process_section_once "System Uptime" "system_uptime"
+process_section_once "Network Interfaces" "network_interfaces"
+process_section_once "System Temperature" "system_temperature"
+process_section_once "Running Processes" "running_processes"
+process_section_once "Linux Kernel Version" "linux_kernel_version"
+process_section_once "System Hardware Details" "system_hardware_details"
+process_section_once "GPU Info" "gpu_info"
+process_section_once "Peripheral Devices (USB)" "peripheral_devices_usb"
+process_section_once "Peripheral Devices (PCI)" "peripheral_devices_pci"
+process_section_once "USB Devices" "usb_devices"
+process_section_once "PCI Devices" "pci_devices"
+process_section_once "Mounted Filesystems" "mounted_filesystems"
+process_section_once "Open Ports" "open_ports"
+process_section_once "File System Information" "file_system_information"
+process_section_once "Network Devices" "network_devices"
+process_section_once "Network Device (eth0) Info" "network_device_eth0_info"
+process_section_once "DNS Configuration" "dns_configuration"
+process_section_once "System Services" "system_services"
+process_section_once "System Users" "system_users"
+process_section_once "System Groups" "system_groups"
+process_section_once "Installed Packages" "installed_packages"
+process_section_once "Kernel Modules" "kernel_modules"
+process_section_once "USB Controllers" "usb_controllers"
+process_section_once "File Permissions" "file_permissions"
+process_section_once "System Environment Variables" "system_environment_variables"
+process_section_once "System Firewall Rules" "system_firewall_rules"
+process_section_once "System SELinux Status" "system_selinux_status"
+process_section_once "System Audit Configuration" "system_audit_configuration"
+process_section_once "System Cron Jobs" "system_cron_jobs"
+process_section_once "System Log Files" "system_log_files"
